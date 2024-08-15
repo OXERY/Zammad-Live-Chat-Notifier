@@ -14,14 +14,15 @@ else:
     CHAT_IDS = [CHAT_IDS]
 
 conn = psycopg2.connect(
-    dbname=os.getenv('DB_NAME'),
-    user=os.getenv('DB_USER'),
-    password=os.getenv('DB_PASSWORD'),
-    host=os.getenv('DB_HOST')
+    dbname=os.getenv('POSTGRESQL_DB'),
+    user=os.getenv('POSTGRESQL_USER'),
+    password=os.getenv('POSTGRESQL_PASS'),
+    host=os.getenv('POSTGRESQL_HOST')
 )
 
 notified_chat_ids = set()
-print("Started Zammad Telegram Notification Service")
+print("Started Zammad Telegram Notifier")
+
 
 def check_waiting_chats():
     with conn.cursor() as cur:
@@ -34,6 +35,7 @@ def check_waiting_chats():
                 for telegram_chat_id in CHAT_IDS:
                     send_telegram_message(f"There is a waiting chat with ID {chat_id}.", telegram_chat_id)
                 notified_chat_ids.add(chat_id)
+
 
 def check_started_chats():
     with conn.cursor() as cur:
@@ -52,6 +54,7 @@ def check_started_chats():
                 send_telegram_message(f"Chat with ID {chat_id} has been taken by {agent_name}.", telegram_chat_id)
             notified_chat_ids.remove(chat_id)
 
+
 def send_telegram_message(message, chat_id):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
@@ -64,6 +67,7 @@ def send_telegram_message(message, chat_id):
     else:
         print(f"Failed to send message to chat ID {chat_id}: {response.text}")
 
+
 def get_chat_id():
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates"
     response = requests.get(url)
@@ -73,13 +77,14 @@ def get_chat_id():
         return chat_id
     return None
 
+
 if __name__ == "__main__":
     chat_id = get_chat_id()
     if chat_id and str(chat_id) not in CHAT_IDS:
         send_telegram_message(f"Your Chat ID is: {chat_id}", chat_id)
 
     for chat_id in CHAT_IDS:
-        send_telegram_message("Zammad Telegram Notification Service started.", chat_id)
+        send_telegram_message("Zammad Telegram Notifier started.", chat_id)
     
     while True:
         check_waiting_chats()

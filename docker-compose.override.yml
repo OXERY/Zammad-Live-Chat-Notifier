@@ -1,0 +1,12 @@
+  notifier:
+    build: ./notifier
+    environment:
+      TELEGRAM_TOKEN: 'YOURBEAUTIFULTOKEN'
+      CHAT_IDS: 'YOURCHATIDS' # comma-separated, if more than one
+      POSTGRESQL_DB: ${POSTGRES_DB:-zammad_production}
+      POSTGRESQL_USER: ${POSTGRES_USER:-zammad}
+      POSTGRESQL_PASS: ${POSTGRES_PASS:-zammad}
+      POSTGRESQL_HOST: ${POSTGRES_HOST:-zammad-postgresql}
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      - zammad-postgresql
